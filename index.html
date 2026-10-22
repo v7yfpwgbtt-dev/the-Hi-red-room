@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#190908">
+<title>THE RED ROOM — Private Character Archive</title>
+<meta name="version" content="archive-v5">
+<style>
+:root{--wine:#721316;--gold:#d8b56d;--paper:#f2e6cc;--ink:#100707;--panel:#1b0b0a}
+*{box-sizing:border-box}body{margin:0;background:#100707;color:var(--paper);font-family:Georgia,"Yu Mincho",serif}button,input,textarea,select{font:inherit}button,a{cursor:pointer}button{color:inherit}
+#lobby{min-height:100svh;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#100707}
+.hero{position:absolute;width:100%;height:100%;inset:0;object-fit:contain;object-position:center;filter:none}
+.vignette{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#10070720,transparent 30%,#10070720 70%,#10070777)}
+.brand{position:absolute;z-index:3;top:3%;left:50%;transform:translateX(-50%);width:90%;text-align:center;letter-spacing:.24em;text-shadow:0 2px 12px #000}
+.brand small{display:block;font:10px monospace;color:#ead08d;letter-spacing:.3em}.brand h1{font-size:clamp(23px,4vw,44px);font-weight:normal;margin:8px 0}.brand .line{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);max-width:340px;margin:12px auto}
+.tap{position:absolute;z-index:5;right:7%;top:54%;padding:12px 18px;background:#210908e8;border:1px solid var(--gold);text-decoration:none;color:#f8e4bf;transform:rotate(6deg);box-shadow:0 5px 20px #0008;animation:float 1.7s ease-in-out infinite}.tap strong{display:block;font:bold 32px monospace;color:#ffb1a1;letter-spacing:.12em}.tap span{font:10px monospace;letter-spacing:.13em}
+.phone-ring{position:absolute;z-index:2;right:18%;bottom:35%;width:clamp(48px,9vw,130px);height:clamp(32px,6vw,78px);border:2px solid #ff302b;border-radius:50%;pointer-events:none;animation:ring 1.2s ease-out infinite}.phone-ring.r2{animation-delay:.6s}
+.phone-hit{position:absolute;z-index:6;right:7%;bottom:33%;width:clamp(70px,13vw,190px);height:clamp(45px,8vw,115px);border-radius:50%;display:block}
+.enter{position:absolute;z-index:3;bottom:3%;left:50%;transform:translateX(-50%);text-align:center;white-space:nowrap;font:11px monospace;letter-spacing:.17em;color:#ead08d;text-shadow:0 2px 8px #000}.enter a{display:block;color:inherit;margin-top:7px}
+.screen{display:none;min-height:100svh;padding:24px clamp(14px,4vw,60px) 45px;background:radial-gradient(ellipse at top,#45100f,#180909 52%,#090606)}
+.head{display:flex;align-items:end;justify-content:space-between;gap:14px;border-bottom:1px solid #86653a;padding:10px 0 20px}.eyebrow{font:11px monospace;letter-spacing:.22em;color:var(--gold)}h2{font-size:clamp(27px,4vw,45px);font-weight:normal;margin:8px 0 0}.btn{display:inline-block;border:1px solid #ad8951;background:#210b0a;color:#f5e3c1;padding:10px 14px;text-decoration:none}.btn.primary{background:#8a171b;border-color:#e1bf79}.btn.danger{border-color:#b85454;color:#ffc8bd}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}.filter{border:1px solid #775331;background:#1d0b0a;color:#e9d4aa;padding:10px 14px;font:11px monospace;letter-spacing:.08em}.filter.active{background:#8f171a;border-color:#e1bd73}
+.search{width:100%;max-width:400px;background:#100707;border:1px solid #755633;color:var(--paper);padding:11px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.card{border:1px solid #735536;background:linear-gradient(145deg,#27100e,#0e0908);min-width:0;cursor:pointer}.card:hover{border-color:#e3bd73;transform:translateY(-2px)}.thumb{height:clamp(140px,22vw,270px);background:repeating-linear-gradient(135deg,#160d0d,#160d0d 12px,#201010 12px,#201010 24px);display:flex;align-items:center;justify-content:center;color:#a78a59;overflow:hidden}.thumb img{width:100%;height:100%;object-fit:cover;object-position:center}.info{padding:13px}.info small{font:10px monospace;letter-spacing:.12em;color:#c7a363}.info h3{font-size:18px;font-weight:normal;margin:8px 0}.info p{font:10px monospace;color:#a9957c}
+
+/* ARCHIVE LIST REFINEMENT */
+.archive-intro{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 6px;padding:14px 16px;border:1px solid #5e4028;background:linear-gradient(110deg,#260d0c,#120808);}
+.archive-intro .intro-title{font-size:15px;letter-spacing:.12em;color:#f0d7a5}
+.archive-intro .intro-note{margin-top:5px;font:10px/1.6 monospace;color:#ad9678;letter-spacing:.08em}
+.record-count{flex-shrink:0;text-align:right;color:var(--gold);font:11px monospace;letter-spacing:.1em}
+.record-count strong{display:block;font:normal 28px Georgia,serif;color:#f4dfb3}
+.toolbar{align-items:center;margin:18px 0 12px}
+.filter{border-radius:0;transition:background .18s,border-color .18s}
+.filter.active{box-shadow:inset 0 -2px 0 #e1bd73}
+.search-wrap{position:relative;max-width:520px;margin:0 0 18px}
+.search{display:block;max-width:none;padding:13px 42px 13px 14px;letter-spacing:.04em}
+.search-wrap:after{content:'⌕';position:absolute;right:14px;top:3px;font-size:25px;color:#c9a66b;pointer-events:none}
+.grid{align-items:stretch}
+.card{position:relative;overflow:hidden;transition:transform .18s,border-color .18s,box-shadow .18s}
+.card:before{content:'';position:absolute;z-index:1;left:0;top:0;width:3px;height:100%;background:linear-gradient(#e2c17d,#7b2521,transparent);opacity:.7}
+.card:hover{box-shadow:0 8px 24px #0007}
+.thumb{position:relative;height:clamp(155px,23vw,270px);border-bottom:1px solid #604328}
+.thumb:after{content:'';position:absolute;inset:45% 0 0;background:linear-gradient(transparent,#10070788);pointer-events:none}
+.thumb img{transition:transform .4s;object-position:center 25%}
+.card:hover .thumb img{transform:scale(1.035)}
+.no-portrait{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(ellipse at 50% 35%,#4a1a18,#1a0b0a 66%,#100707);color:#9f8155;text-align:center}
+.no-portrait .sigil{font-size:34px;line-height:1;color:#c5a064}
+.no-portrait span{font:9px monospace;letter-spacing:.22em}
+.info{position:relative;padding:13px 13px 15px}
+.info small{display:block;font:9px/1.5 monospace;letter-spacing:.09em;color:#d1b476}
+.info h3{font-size:clamp(16px,2vw,20px);line-height:1.35;margin:8px 0 7px;overflow-wrap:anywhere}
+.info p{margin:0;font:9px monospace;letter-spacing:.12em;color:#9e8060}
+.category-stamp{display:inline-block;margin-top:10px;padding:4px 7px;border:1px solid #6b4c2d;color:#c8ad79;font:9px monospace;letter-spacing:.1em}
+.list-empty{grid-column:1/-1;padding:38px 18px;text-align:center;border:1px dashed #69482c;color:#bba17b;font:11px/1.9 monospace;letter-spacing:.1em}
+@media(max-width:760px){.archive-intro{padding:12px;align-items:flex-start}.archive-intro .intro-title{font-size:13px}.record-count strong{font-size:24px}.toolbar{gap:7px}.filter{padding:9px 10px;font-size:10px}.thumb{height:clamp(145px,49vw,240px)}.info{padding:11px 10px 13px}.info h3{font-size:16px}.search-wrap{max-width:none}}
+
+.detailgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px;margin-top:22px}.artbox{border:1px solid #a7844e;padding:8px;align-self:start}.artbox img{display:block;width:100%;max-height:70vh;object-fit:contain;background:#100707}.field{border-top:1px solid #67472b;padding:14px 0}.field label{display:block;font:11px monospace;letter-spacing:.15em;color:var(--gold);margin-bottom:8px}.field input,.field textarea,.field select{width:100%;background:#0b0707;color:#eadcc3;border:1px solid #5d422b;padding:11px}.field textarea{min-height:90px;resize:vertical;font:13px/1.6 monospace}.field input{font-size:18px}.muted{font:11px monospace;color:#b9a487}.status{color:#e8c875;font:12px monospace;white-space:pre-wrap}.adminbox{border:1px solid #74502e;padding:15px;margin-top:20px;background:#130807}
+#loginPanel{max-width:480px;margin:35px auto;border:1px solid #8a6a3b;padding:20px;background:#160908}#loginPanel input{display:block;width:100%;margin:8px 0 14px;padding:11px;background:#090606;border:1px solid #68482d;color:#f2e6cc}
+footer{border-top:1px solid #4d3423;margin-top:32px;padding-top:14px;font:10px monospace;letter-spacing:.12em;color:#927954}
+@keyframes ring{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.6);opacity:0}}@keyframes float{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.detailgrid{grid-template-columns:1fr}.artbox img{max-height:48vh}.tap{top:43%;right:4%;padding:8px 12px}.tap strong{font-size:25px}.phone-ring{right:16%;bottom:35%;width:clamp(48px,12vw,82px);height:clamp(32px,8vw,56px)}.phone-hit{right:5%;bottom:33%;width:33%;height:12%}.brand{top:2%}.enter{bottom:2%;font-size:9px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="lobby">
+<img class="hero" src="./reception.jpg" alt="豪華なホテルの受付">
+<div class="vignette"></div>
+<header class="brand"><small>EST. 19— · PRIVATE ARCHIVE</small><h1>THE RED ROOM</h1><div class="line"></div><small>WELCOME, DISTINGUISHED GUEST</small></header>
+<a class="tap" href="#archive" onclick="go('archive');return false"><strong>TAP!</strong><span>ANSWER THE CALL</span></a>
+<div class="phone-ring"></div><div class="phone-ring r2"></div>
+<a class="phone-hit" href="#archive" aria-label="赤い電話を取る" onclick="go('archive');return false"></a>
+<div class="enter">☎ THE PHONE IS RINGING<a href="#archive" onclick="go('archive');return false">赤い電話をタップして受付へ / ENTER ARCHIVE</a></div>
+</main>
+<section id="archive" class="screen">
+<header class="head"><div><div class="eyebrow">GUEST REGISTRY / PRIVATE RECORDS</div><h2>Character Archive</h2><p class="muted">EVERY GUEST HAS A STORY.</p></div><button class="btn" onclick="go('lobby')">← LOBBY</button></header>
+<div class="archive-intro"><div><div class="intro-title">✦ THE GUEST REGISTRY</div><div class="intro-note">A PRIVATE COLLECTION OF CHARACTERS, WORLDS & STORIES.</div></div><div class="record-count"><strong id="recordCount">04</strong> RECORDS</div></div>
+<div class="toolbar" id="filters"><button class="filter active" data-cat="ALL" onclick="setCategory('ALL')">ALL RECORDS</button><button class="filter" data-cat="OC" onclick="setCategory('OC')">ORIGINAL</button><button class="filter" data-cat="UCHIYOSO" onclick="setCategory('UCHIYOSO')">UCHIYOSO</button><button class="filter" data-cat="WORLD" onclick="setCategory('WORLD')">WORLD / GROUP</button><button class="btn primary" id="addBtn" onclick="newRecord()" hidden>＋ ADD CHARACTER</button></div>
+<div class="search-wrap"><input class="search" id="search" placeholder="Search name / profile / keyword..." oninput="renderCards()" aria-label="キャラクターを検索"></div>
+<div id="cards" class="grid"></div>
+<div class="adminbox"><div class="eyebrow">ARCHIVE ADMINISTRATION</div><p class="muted">編集者ログイン後にキャラクターの追加・編集・削除ができます。</p><button class="btn" onclick="go('admin')">ADMIN LOGIN</button><span id="authState" class="status"></span></div>
+<footer>THE RED ROOM · CONFIDENTIAL GUEST RECORDS</footer>
+</section>
+<section id="detail" class="screen">
+<header class="head"><div><div class="eyebrow" id="recordNo">RECORD / NO.---</div><h2>Character Record</h2></div><button class="btn" onclick="go('archive')">← ARCHIVE</button></header>
+<div class="detailgrid"><div class="artbox"><img id="detailImg" src="./reception.jpg" alt="キャラクター画像"><p id="detailCategory" class="muted"></p></div><div><div class="eyebrow">GUEST PROFILE</div><h2 id="detailName" style="margin-bottom:20px">Character</h2><div id="viewFields"></div><div id="editFields" hidden>
+<div class="field"><label>CHARACTER NAME</label><input id="fName"></div>
+<div class="field"><label>CATEGORY</label><select id="fCategory"><option value="OC">ORIGINAL / オリキャラ</option><option value="UCHIYOSO">UCHIYOSO / うちよそ</option><option value="WORLD">WORLD / GROUP / 世界観</option></select></div>
+<div class="field"><label>PROFILE / NOTES</label><textarea id="fProfile" placeholder="年齢、身長、性格、設定など"></textarea></div>
+<div class="field"><label>BASE PROMPT</label><textarea id="fBase" placeholder="共通プロンプト"></textarea><button class="btn" onclick="copyText('fBase')">COPY</button></div>
+<div class="field"><label>CHARACTER PROMPT</label><textarea id="fPrompt" placeholder="キャラクター固有のプロンプト"></textarea><button class="btn" onclick="copyText('fPrompt')">COPY</button></div>
+<div class="field"><label>NEGATIVE PROMPT</label><textarea id="fNegative" placeholder="ネガティブプロンプト"></textarea><button class="btn" onclick="copyText('fNegative')">COPY</button></div>
+<div class="field"><label>CHARACTER IMAGE</label><input type="file" id="fImage" accept="image/*"><p class="muted">画像を選択すると、このキャラクターの画像として保存します。</p></div>
+<button class="btn primary" onclick="saveRecord()">SAVE CHANGES</button><button class="btn danger" onclick="deleteRecord()">DELETE</button><p id="editStatus" class="status"></p>
+</div></div></div><footer>PRIVATE ARCHIVE · HANDLE WITH CARE</footer>
+</section>
+<section id="admin" class="screen">
+<header class="head"><div><div class="eyebrow">STAFF ONLY</div><h2>Administrator Login</h2></div><button class="btn" onclick="go('archive')">← ARCHIVE</button></header>
+<div id="loginPanel"><p class="muted">管理者のメールアドレスとパスワードでログインしてください。</p><label>EMAIL</label><input id="adminEmail" type="email" autocomplete="username"><label>PASSWORD</label><input id="adminPassword" type="password" autocomplete="current-password"><button class="btn primary" onclick="loginAdmin()">SIGN IN</button><button class="btn" onclick="logoutAdmin()">SIGN OUT</button><p id="loginStatus" class="status"></p><p class="muted">※Supabase設定が完了するまではログイン機能は使えません。</p></div>
+<footer>ADMIN ACCESS · PRIVATE</footer>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/*
+SETUP: Paste your Supabase Project URL and anon/publishable key below.
+Never put a service_role key in this public file.
+*/
+const SUPABASE_URL = "PASTE_SUPABASE_PROJECT_URL_HERE";
+const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
+let db = null, session = null, currentId = null, currentCategory = "ALL";
+let rows = [];
+const demo = [
+ {id:"demo-001",record_no:"001",name:"ホテルの受付係",category:"OC",profile:"THE RED ROOMの受付係。",base_prompt:"",character_prompt:"",negative_prompt:"",image_url:"./reception.jpg",demo:true},
+ {id:"demo-002",record_no:"002",name:"CHARACTER NAME",category:"OC",profile:"",base_prompt:"",character_prompt:"",negative_prompt:"",image_url:"",demo:true},
+ {id:"demo-003",record_no:"003",name:"CHARACTER NAME",category:"UCHIYOSO",profile:"",base_prompt:"",character_prompt:"",negative_prompt:"",image_url:"",demo:true},
+ {id:"demo-004",record_no:"004",name:"CHARACTER NAME",category:"WORLD",profile:"",base_prompt:"",character_prompt:"",negative_prompt:"",image_url:"",demo:true}
+];
+function configured(){return !SUPABASE_URL.includes("PASTE_")&&!SUPABASE_ANON_KEY.includes("PASTE_")&&window.supabase}
+if(configured()) db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+function go(id){["lobby","archive","detail","admin"].forEach(x=>document.getElementById(x).style.display=x===id?(x==="lobby"?"flex":"block"):"none");if(id==="archive")loadRecords();if(id==="admin")refreshAuth();history.replaceState(null,"",location.pathname+location.search+"#"+id);window.scrollTo(0,0)}
+window.addEventListener("hashchange",()=>{const id=location.hash.slice(1);if(["lobby","archive","detail","admin"].includes(id))go(id)});
+function setCategory(cat){currentCategory=cat;document.querySelectorAll(".filter").forEach(b=>b.classList.toggle("active",b.dataset.cat===cat));renderCards()}
+async function loadRecords(){if(db){const {data,error}=await db.from("characters").select("*").order("record_no");if(!error&&data)rows=data;else{rows=demo;console.warn(error)}}else rows=demo;renderCards();refreshAuth()}
+function renderCards(){const q=(document.getElementById("search")?.value||"").trim().toLowerCase();const list=rows.filter(r=>(currentCategory==="ALL"||r.category===currentCategory)&&[r.name,r.profile,r.base_prompt,r.character_prompt,r.negative_prompt,r.category].some(v=>String(v||"").toLowerCase().includes(q)));const count=document.getElementById("recordCount");if(count)count.textContent=String(list.length).padStart(2,"0");document.getElementById("cards").innerHTML=list.map(r=>{const catLabel=({OC:"ORIGINAL CHARACTER",UCHIYOSO:"UCHIYOSO",WORLD:"WORLD / GROUP"})[r.category]||r.category||"UNFILED";const portrait=r.image_url?`<img src="${esc(r.image_url)}" alt="${esc(r.name||"Character portrait")}" loading="lazy">`:`<div class="no-portrait"><div class="sigil">✦</div><span>PORTRAIT PENDING</span></div>`;return `<article class="card" tabindex="0" role="button" aria-label="${esc(r.name||"Untitled")}の詳細を開く" onclick="openRecord('${esc(r.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRecord('${esc(r.id)}')}"><div class="thumb">${portrait}</div><div class="info"><small>RECORD NO. ${esc(r.record_no||"---")}</small><h3>${esc(r.name||"Untitled")}</h3><p>OPEN CHARACTER FILE ↗</p><span class="category-stamp">${esc(catLabel)}</span></div></article>`}).join("")||'<div class="list-empty">NO MATCHING RECORDS FOUND<br>別のキーワード、またはカテゴリーを選んでください。</div>'}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function refreshAuth(){document.getElementById("authState").textContent=session?" · ADMIN SIGNED IN":"";document.getElementById("addBtn").hidden=!session}
+async function refreshAuthSession(){if(db){const {data}=await db.auth.getSession();session=data.session;refreshAuth()}}
+async function loginAdmin(){if(!db){document.getElementById("loginStatus").textContent="Supabase未設定です。READMEの設定手順を先に完了してください。";return}const email=document.getElementById("adminEmail").value,password=document.getElementById("adminPassword").value;const {data,error}=await db.auth.signInWithPassword({email,password});if(error){document.getElementById("loginStatus").textContent=error.message;return}session=data.session;document.getElementById("loginStatus").textContent="SIGNED IN";refreshAuth();go("archive")}
+async function logoutAdmin(){if(db)await db.auth.signOut();session=null;refreshAuth();document.getElementById("loginStatus").textContent="SIGNED OUT"}
+function newRecord(){if(!session){alert("編集するには管理者ログインが必要です");return}currentId=null;fillEditor({record_no:String(Math.max(0,...rows.map(x=>Number(x.record_no)||0))+1).padStart(3,"0"),name:"",category:"OC",profile:"",base_prompt:"",character_prompt:"",negative_prompt:"",image_url:""});go("detail")}
+function openRecord(id){currentId=id;const r=rows.find(x=>String(x.id)===String(id));if(!r)return;document.getElementById("recordNo").textContent="RECORD / NO."+r.record_no;document.getElementById("detailName").textContent=r.name;document.getElementById("detailImg").src=r.image_url||"./reception.jpg";document.getElementById("detailCategory").textContent=r.category||"OC";document.getElementById("viewFields").innerHTML=`<div class="field"><label>PROFILE / NOTES</label><p>${esc(r.profile||"No notes yet.")}</p></div><div class="field"><label>BASE PROMPT</label><pre>${esc(r.base_prompt||"")}</pre><button class="btn" onclick="copyRaw('${esc(r.base_prompt||"")}')">COPY</button></div><div class="field"><label>CHARACTER PROMPT</label><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(r.character_prompt||"")}</pre><button class="btn" onclick="copyRaw('${esc(r.character_prompt||"")}')">COPY</button></div><div class="field"><label>NEGATIVE PROMPT</label><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(r.negative_prompt||"")}</pre><button class="btn" onclick="copyRaw('${esc(r.negative_prompt||"")}')">COPY</button></div>`;document.getElementById("viewFields").hidden=false;document.getElementById("editFields").hidden=!session;fillEditor(r);go("detail")}
+function fillEditor(r){document.getElementById("fName").value=r.name||"";document.getElementById("fCategory").value=r.category||"OC";document.getElementById("fProfile").value=r.profile||"";document.getElementById("fBase").value=r.base_prompt||"";document.getElementById("fPrompt").value=r.character_prompt||"";document.getElementById("fNegative").value=r.negative_prompt||"";document.getElementById("fImage").value="";document.getElementById("editStatus").textContent="";document.getElementById("editFields").hidden=!session;document.getElementById("viewFields").hidden=!!session}
+async function saveRecord(){if(!db||!session){document.getElementById("editStatus").textContent="データベース設定または管理者ログインが必要です。";return}const payload={record_no:currentId?rows.find(x=>String(x.id)===String(currentId))?.record_no:String(Math.max(0,...rows.map(x=>Number(x.record_no)||0))+1).padStart(3,"0"),name:document.getElementById("fName").value.trim(),category:document.getElementById("fCategory").value,profile:document.getElementById("fProfile").value,base_prompt:document.getElementById("fBase").value,character_prompt:document.getElementById("fPrompt").value,negative_prompt:document.getElementById("fNegative").value};if(!payload.name){document.getElementById("editStatus").textContent="キャラクター名を入力してください。";return}const file=document.getElementById("fImage").files[0];if(file){const path=`${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;const {error:upErr}=await db.storage.from("character-images").upload(path,file,{upsert:true});if(upErr){document.getElementById("editStatus").textContent=upErr.message;return}payload.image_url=db.storage.from("character-images").getPublicUrl(path).data.publicUrl}else if(currentId){payload.image_url=rows.find(x=>String(x.id)===String(currentId))?.image_url||null}else payload.image_url=null;let result;if(currentId&&!String(currentId).startsWith("demo-"))result=await db.from("characters").update(payload).eq("id",currentId).select().single();else result=await db.from("characters").insert(payload).select().single();if(result.error){document.getElementById("editStatus").textContent=result.error.message;return}document.getElementById("editStatus").textContent="SAVED";await loadRecords();if(result.data)openRecord(result.data.id)}
+async function deleteRecord(){if(!db||!session||!currentId||String(currentId).startsWith("demo-")){document.getElementById("editStatus").textContent="保存済みのキャラクターのみ削除できます。";return}if(!confirm("このキャラクターを削除しますか？"))return;const {error}=await db.from("characters").delete().eq("id",currentId);if(error){document.getElementById("editStatus").textContent=error.message;return}go("archive")}
+async function copyText(id){await navigator.clipboard.writeText(document.getElementById(id).value)}
+async function copyRaw(t){await navigator.clipboard.writeText(t)}
+refreshAuthSession();go(location.hash==="#archive"?"archive":"lobby");
+</script>
+</body>
+</html>
