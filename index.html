@@ -56,7 +56,13 @@
 @media(max-width:760px){.archive-intro{padding:12px;align-items:flex-start}.archive-intro .intro-title{font-size:13px}.record-count strong{font-size:24px}.toolbar{gap:7px}.filter{padding:9px 10px;font-size:10px}.thumb{height:clamp(145px,49vw,240px)}.info{padding:11px 10px 13px}.info h3{font-size:16px}.search-wrap{max-width:none}}
 
 .detailgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px;margin-top:22px}.artbox{border:1px solid #a7844e;padding:8px;align-self:start}.artbox img{display:block;width:100%;max-height:70vh;object-fit:contain;background:#100707}.detail-placeholder{aspect-ratio:4/5;min-height:240px}.detail-placeholder[hidden]{display:none}.field{border-top:1px solid #67472b;padding:14px 0}.field label{display:block;font:11px monospace;letter-spacing:.15em;color:var(--gold);margin-bottom:8px}.field input,.field textarea,.field select{width:100%;background:#0b0707;color:#eadcc3;border:1px solid #5d422b;padding:11px}.field textarea{min-height:90px;resize:vertical;font:13px/1.6 monospace}.field input{font-size:18px}.muted{font:11px monospace;color:#b9a487}.status{color:#e8c875;font:12px monospace;white-space:pre-wrap}.adminbox{border:1px solid #74502e;padding:15px;margin-top:20px;background:#130807}
-#loginPanel{max-width:480px;margin:35px auto;border:1px solid #8a6a3b;padding:20px;background:#160908}#loginPanel input{display:block;width:100%;margin:8px 0 14px;padding:11px;background:#090606;border:1px solid #68482d;color:#f2e6cc}
+.detail-tabs{display:flex;gap:8px;margin:20px 0;flex-wrap:wrap}
+.detail-tab{background:transparent;color:#b8b0a5;border:1px solid #4d3423;padding:10px 16px;cursor:pointer;font-size:12px;letter-spacing:2px}
+.detail-tab.active{background:#4d3423;color:#fff}
+.tab-panel[hidden]{display:none}
+.gallery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.gallery-grid img{width:100%;display:block;object-fit:cover}
+ #loginPanel{max-width:480px;margin:35px auto;border:1px solid #8a6a3b;padding:20px;background:#160908}#loginPanel input{display:block;width:100%;margin:8px 0 14px;padding:11px;background:#090606;border:1px solid #68482d;color:#f2e6cc}
 footer{border-top:1px solid #4d3423;margin-top:32px;padding-top:14px;font:10px monospace;letter-spacing:.12em;color:#927954}
 @keyframes ring{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.6);opacity:0}}@keyframes float{0%,100%{translate:0 0}50%{translate:0 -5px}}
 @media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.detailgrid{grid-template-columns:1fr}.artbox img{max-height:48vh}.tap{top:43%;right:4%;padding:8px 12px}.tap strong{font-size:25px}.phone-ring{right:16%;bottom:35%;width:clamp(48px,12vw,82px);height:clamp(32px,8vw,56px)}.phone-hit{right:5%;bottom:33%;width:33%;height:12%}.brand{top:2%}.enter{bottom:2%;font-size:9px}}
@@ -84,7 +90,26 @@ footer{border-top:1px solid #4d3423;margin-top:32px;padding-top:14px;font:10px m
 </section>
 <section id="detail" class="screen">
 <header class="head"><div><div class="eyebrow" id="recordNo">RECORD / NO.---</div><h2>Character Record</h2></div><button class="btn" onclick="go('archive')">← ARCHIVE</button></header>
-<div class="detailgrid"><div class="artbox"><img id="detailImg" src="./reception.jpg" alt="キャラクター画像"><div id="detailPlaceholder" class="no-portrait detail-placeholder" hidden><div class="sigil">✦</div><span>PORTRAIT PENDING</span></div><p id="detailCategory" class="muted"></p></div><div><div class="eyebrow">GUEST PROFILE</div><h2 id="detailName" style="margin-bottom:20px">Character</h2><div id="viewFields"></div><div id="editFields" hidden>
+<div class="detailgrid"><div class="artbox"><img id="detailImg" src="./reception.jpg" alt="キャラクター画像"><div id="detailPlaceholder" class="no-portrait detail-placeholder" hidden><div class="sigil">✦</div><span>PORTRAIT PENDING</span></div><p id="detailCategory" class="muted"></p></div><div><div class="detail-tabs">
+
+  <button class="detail-tab active" onclick="showDetailTab('profile')">PROFILE</button>
+
+  <button class="detail-tab" onclick="showDetailTab('prompt')">PROMPT</button>
+
+  <button class="detail-tab" onclick="showDetailTab('gallery')">GALLERY</button>
+ 
+</div><div><div class="eyebrow">GUEST PROFILE</div><h2 id="detailName" style="margin-bottom:20px">Character</h2><div id="viewFields"></div>
+ <div id="galleryPanel" hidden>
+  <div class="eyebrow">CHARACTER GALLERY</div>
+  <div id="galleryGrid" class="gallery-grid"></div>
+  <div id="galleryAdmin" hidden>
+    <label>ADD GALLERY IMAGES</label>
+    <input type="file" id="galleryFiles" accept="image/*" multiple>
+    <button class="btn primary" onclick="uploadGallery()">UPLOAD IMAGES</button>
+    <p id="galleryStatus" class="status"></p>
+  </div>
+</div>
+ <div id="editFields" hidden>
 <div class="field"><label>CHARACTER NAME</label><input id="fName"></div>
 <div class="field"><label>CATEGORY</label><select id="fCategory"><option value="OC">ORIGINAL / オリキャラ</option><option value="UCHIYOSO">UCHIYOSO / うちよそ</option><option value="WORLD">WORLD / GROUP / 世界観</option></select></div>
 <div class="field"><label>PROFILE / NOTES</label><textarea id="fProfile" placeholder="年齢、身長、性格、設定など"></textarea></div>
@@ -129,13 +154,67 @@ async function refreshAuthSession(){if(db){const {data}=await db.auth.getSession
 async function loginAdmin(){if(!db){document.getElementById("loginStatus").textContent="Supabase未設定です。READMEの設定手順を先に完了してください。";return}const email=document.getElementById("adminEmail").value,password=document.getElementById("adminPassword").value;const {data,error}=await db.auth.signInWithPassword({email,password});if(error){document.getElementById("loginStatus").textContent=error.message;return}session=data.session;document.getElementById("loginStatus").textContent="SIGNED IN";refreshAuth();go("archive")}
 async function logoutAdmin(){if(db)await db.auth.signOut();session=null;refreshAuth();document.getElementById("loginStatus").textContent="SIGNED OUT"}
 function newRecord(){if(!session){alert("編集するには管理者ログインが必要です");return}currentId=null;fillEditor({record_no:String(Math.max(0,...rows.map(x=>Number(x.record_no)||0))+1).padStart(3,"0"),name:"",category:"OC",profile:"",base_prompt:"",character_prompt:"",negative_prompt:"",image_url:""});go("detail")}
-function openRecord(id){currentId=id;const r=rows.find(x=>String(x.id)===String(id));if(!r)return;document.getElementById("recordNo").textContent="RECORD / NO."+r.record_no;document.getElementById("detailName").textContent=r.name;const detailImg=document.getElementById("detailImg");const detailPlaceholder=document.getElementById("detailPlaceholder");if(r.image_url){detailImg.src=r.image_url;detailImg.style.display="block";detailPlaceholder.hidden=true}else{detailImg.style.display="none";detailPlaceholder.hidden=false}document.getElementById("detailCategory").textContent=r.category||"OC";document.getElementById("viewFields").innerHTML=`<div class="field"><label>PROFILE / NOTES</label><p>${esc(r.profile||"No notes yet.")}</p></div><div class="field"><label>BASE PROMPT</label><pre>${esc(r.base_prompt||"")}</pre><button class="btn" onclick="copyRaw('${esc(r.base_prompt||"")}')">COPY</button></div><div class="field"><label>CHARACTER PROMPT</label><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(r.character_prompt||"")}</pre><button class="btn" onclick="copyRaw('${esc(r.character_prompt||"")}')">COPY</button></div><div class="field"><label>NEGATIVE PROMPT</label><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(r.negative_prompt||"")}</pre><button class="btn" onclick="copyRaw('${esc(r.negative_prompt||"")}')">COPY</button></div>`;document.getElementById("viewFields").hidden=false;document.getElementById("editFields").hidden=!session;fillEditor(r);go("detail")}
+function openRecord(id){currentId=id;showDetailTab("profile");const r=rows.find(x=>String(x.id)===String(id));if(!r)return;document.getElementById("recordNo").textContent="RECORD / NO."+r.record_no;document.getElementById("detailName").textContent=r.name;const detailImg=document.getElementById("detailImg");const detailPlaceholder=document.getElementById("detailPlaceholder");if(r.image_url){detailImg.src=r.image_url;detailImg.style.display="block";detailPlaceholder.hidden=true}else{detailImg.style.display="none";detailPlaceholder.hidden=false}document.getElementById("detailCategory").textContent=r.category||"OC";document.getElementById("viewFields").innerHTML=`<div class="field"><label>PROFILE / NOTES</label><p>${esc(r.profile||"No notes yet.")}</p></div><div class="field"><label>BASE PROMPT</label><pre>${esc(r.base_prompt||"")}</pre><button class="btn" onclick="copyRaw('${esc(r.base_prompt||"")}')">COPY</button></div><div class="field"><label>CHARACTER PROMPT</label><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(r.character_prompt||"")}</pre><button class="btn" onclick="copyRaw('${esc(r.character_prompt||"")}')">COPY</button></div><div class="field"><label>NEGATIVE PROMPT</label><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(r.negative_prompt||"")}</pre><button class="btn" onclick="copyRaw('${esc(r.negative_prompt||"")}')">COPY</button></div>`;document.getElementById("viewFields").hidden=false;document.getElementById("editFields").hidden=!session;fillEditor(r);go("detail")}
 function fillEditor(r){document.getElementById("fName").value=r.name||"";document.getElementById("fCategory").value=r.category||"OC";document.getElementById("fProfile").value=r.profile||"";document.getElementById("fBase").value=r.base_prompt||"";document.getElementById("fPrompt").value=r.character_prompt||"";document.getElementById("fNegative").value=r.negative_prompt||"";document.getElementById("fImage").value="";document.getElementById("editStatus").textContent="";document.getElementById("editFields").hidden=!session;document.getElementById("viewFields").hidden=!!session}
 async function saveRecord(){if(!db||!session){document.getElementById("editStatus").textContent="データベース設定または管理者ログインが必要です。";return}const payload={record_no:currentId?rows.find(x=>String(x.id)===String(currentId))?.record_no:String(Math.max(0,...rows.map(x=>Number(x.record_no)||0))+1).padStart(3,"0"),name:document.getElementById("fName").value.trim(),category:document.getElementById("fCategory").value,profile:document.getElementById("fProfile").value,base_prompt:document.getElementById("fBase").value,character_prompt:document.getElementById("fPrompt").value,negative_prompt:document.getElementById("fNegative").value};if(!payload.name){document.getElementById("editStatus").textContent="キャラクター名を入力してください。";return}const file=document.getElementById("fImage").files[0];if(file){const path=`${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;const {error:upErr}=await db.storage.from("character-images").upload(path,file,{upsert:true});if(upErr){document.getElementById("editStatus").textContent=upErr.message;return}payload.image_url=db.storage.from("character-images").getPublicUrl(path).data.publicUrl}else if(currentId){payload.image_url=rows.find(x=>String(x.id)===String(currentId))?.image_url||null}else payload.image_url=null;let result;if(currentId&&!String(currentId).startsWith("demo-"))result=await db.from("characters").update(payload).eq("id",currentId).select().single();else result=await db.from("characters").insert(payload).select().single();if(result.error){document.getElementById("editStatus").textContent=result.error.message;return}document.getElementById("editStatus").textContent="SAVED";await loadRecords();if(result.data)openRecord(result.data.id)}
 async function deleteRecord(){if(!db||!session||!currentId||String(currentId).startsWith("demo-")){document.getElementById("editStatus").textContent="保存済みのキャラクターのみ削除できます。";return}if(!confirm("このキャラクターを削除しますか？"))return;const {error}=await db.from("characters").delete().eq("id",currentId);if(error){document.getElementById("editStatus").textContent=error.message;return}go("archive")}
 async function copyText(id){await navigator.clipboard.writeText(document.getElementById(id).value)}
 async function copyRaw(t){await navigator.clipboard.writeText(t)}
 refreshAuthSession();go(location.hash==="#archive"?"archive":"lobby");
+ function showDetailTab(tab){
+  const tabs=document.querySelectorAll(".detail-tab");
+  tabs.forEach(b=>b.classList.toggle("active",b.textContent.trim().toLowerCase()===tab));
+  document.getElementById("viewFields").hidden=tab==="gallery";
+  document.getElementById("galleryPanel").hidden=tab!=="gallery";
+  if(tab==="gallery")loadGallery();
+}
+ async function loadGallery(){
+  const grid=document.getElementById("galleryGrid");
+  const admin=document.getElementById("galleryAdmin");
+  const status=document.getElementById("galleryStatus");
+  grid.innerHTML="";
+  admin.hidden=!session;
+  if(!db||!currentId||String(currentId).startsWith("demo-")){
+    grid.innerHTML='<p class="muted">保存済みキャラクターのギャラリーです。</p>';
+    return;
+  }
+  const {data,error}=await db.from("character_gallery").select("*").eq("character_id",currentId).order("created_at");
+  if(error){status.textContent=error.message;return;}
+  grid.innerHTML=(data||[]).map(item=>`<div><img src="${esc(item.image_url)}" alt="${esc(item.caption||"Gallery image")}">${session?`<button class="btn danger" onclick="deleteGallery(${item.id})">DELETE</button>`:""}</div>`).join("");
+}
+ async function uploadGallery(){
+  const input=document.getElementById("galleryFiles");
+  const status=document.getElementById("galleryStatus");
+  if(!db||!session||!currentId||String(currentId).startsWith("demo-")){
+    status.textContent="管理者ログインと保存済みキャラクターが必要です。";
+    return;
+  }
+  const files=Array.from(input.files||[]);
+  if(!files.length){status.textContent="画像を選択してください。";return;}
+  status.textContent="アップロード中...";
+  for(const file of files){
+    const path=`gallery/${currentId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+    const {error:upErr}=await db.storage.from("character-images").upload(path,file);
+    if(upErr){status.textContent=upErr.message;return;}
+    const url=db.storage.from("character-images").getPublicUrl(path).data.publicUrl;
+    const {error}=await db.from("character_gallery").insert({character_id:currentId,image_url:url,caption:file.name});
+    if(error){status.textContent=error.message;return;}
+  }
+  input.value="";
+  status.textContent="アップロード完了！";
+  await loadGallery();
+}
+ async function deleteGallery(id){
+  if(!db||!session)return;
+  if(!confirm("このギャラリー画像を削除しますか？"))return;
+  const {error}=await db.from("character_gallery").delete().eq("id",id).eq("character_id",currentId);
+  if(error){
+    document.getElementById("galleryStatus").textContent=error.message;
+    return;
+  }
+  await loadGallery();
+  document.getElementById("galleryStatus").textContent="画像を削除しました。";
+}
 </script>
 </body>
 </html>
